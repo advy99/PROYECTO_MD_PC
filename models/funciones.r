@@ -30,7 +30,8 @@ random_sample <- function(training, test, train_percentage, num_features){
 
 # Función para leer los datos del problema aplicando las transformaciones necesarias
 # a factores y si es necesario juntar las etiquetas
-leer_datos <- function(ruta_predictores_train, ruta_etiquetas_train, ruta_predictores_test, juntar_etiquetas = FALSE) {
+leer_datos <- function(ruta_predictores_train, ruta_etiquetas_train, ruta_predictores_test, juntar_etiquetas = FALSE,
+					   factores_ordenados = c(1,2,16:23,26), factores = -c(1,2,16:23,26:28)) {
 	
 	# leemos los datos de train
 	x_train <- read_csv(ruta_predictores_train)
@@ -40,24 +41,30 @@ leer_datos <- function(ruta_predictores_train, ruta_etiquetas_train, ruta_predic
 	
 	
 	#convertimos a factor ordenado las preguntas que las respuestas tienen cierto orden
-	x_train <- x_train %>% mutate(across(c(1,2,16:23,26), as.ordered))
-	x_test <- x_test %>% mutate(across(c(1,2,16:23,26), as.ordered))
+	x_train <- x_train %>% mutate(across(factores_ordenados, as.ordered))
+	x_test <- x_test %>% mutate(across(factores_ordenados, as.ordered))
 	
 	#El resto de variables, menos household_adults y household_children las pasamos
 	#a factor sin orden.
-	x_train <- x_train %>% mutate(across(-c(1,2,16:23,26:28), as.factor))
-	x_test <- x_test %>% mutate(across(-c(1,2,16:23,26:28), as.factor))
+	x_train <- x_train %>% mutate(across(factores, as.factor))
+	x_test <- x_test %>% mutate(across(factores, as.factor))
 	
-	# le damos niveles de prioridad a la variable educacion
-	levels(x_train$education) = c("< 12 Years","12 Years","Some College","College Graduate")
-	levels(x_test$education) = c("< 12 Years","12 Years","Some College","College Graduate")
+	if ("education" %in% colnames(x_train)) {
+		# le damos niveles de prioridad a la variable educacion
+		levels(x_train$education) = c("< 12 Years","12 Years","Some College","College Graduate")
+		levels(x_test$education) = c("< 12 Years","12 Years","Some College","College Graduate")
+		
+	}
 	
-	# le damos niveles de prioridad a los ingresos
-	levels(x_train$income_poverty) = c("Below Poverty","<= $75,000, Above Poverty",
-									   "> $75,000")
-	levels(x_test$income_poverty) = c("Below Poverty","<= $75,000, Above Poverty",
-									  "> $75,000")
+	if ("income_poverty" %in% colnames(x_train)) {
+		# le damos niveles de prioridad a los ingresos
+		levels(x_train$income_poverty) = c("Below Poverty","<= $75,000, Above Poverty",
+										   "> $75,000")
+		levels(x_test$income_poverty) = c("Below Poverty","<= $75,000, Above Poverty",
+										  "> $75,000")
+	}
 	
+
 	
 	# eliminamos el ID de las etiquetas de train
 	y_train = y_train %>% select(-1)
