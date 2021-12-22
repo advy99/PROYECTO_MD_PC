@@ -30,7 +30,7 @@ random_sample <- function(training, test, train_percentage, num_features){
 
 # Función para leer los datos del problema aplicando las transformaciones necesarias
 # a factores y si es necesario juntar las etiquetas
-leer_datos <- function(ruta_predictores_train, ruta_etiquetas_train, ruta_predictores_test, juntar_etiquetas = TRUE) {
+leer_datos <- function(ruta_predictores_train, ruta_etiquetas_train, ruta_predictores_test, juntar_etiquetas = FALSE) {
 	
 	# leemos los datos de train
 	x_train <- read_csv(ruta_predictores_train)
