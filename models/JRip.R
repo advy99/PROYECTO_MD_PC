@@ -50,7 +50,15 @@ training_con_h1n1 <- base::cbind(training, training_labels[,1])
 
 modelo_JRip_h1n1 <- train_JRip(h1n1_vaccine ~ ., training_con_h1n1, num_cv = 10)
 
+#
+# Mejor tune obtenido para h1n1_vaccine:
+# Fitting NumOpt = 1, NumFolds = 4, MinWeights = 3 on full training set
+#
+
 predicciones_h1n1_vaccine_test <- predict(modelo_JRip_h1n1, test, type = "prob")
+
+summary(modelo_JRip_h1n1)
+
 
 
 training_con_seasonal <- base::cbind(training, training_labels[,2])
@@ -58,6 +66,13 @@ training_con_seasonal <- base::cbind(training, training_labels[,2])
 modelo_JRip_seasonal <- train_JRip(seasonal_vaccine ~ ., training_con_seasonal, num_cv = 10)
 
 predicciones_seasonal_vaccine_test <- predict(modelo_JRip_seasonal, test, type = "prob")
+
+#
+# Mejor tune obtenido para seasonal_vaccine:
+# Fitting NumOpt = 3, NumFolds = 2, MinWeights = 2 on full training set
+#
+
+summary(modelo_JRip_seasonal)
 
 
 #
@@ -69,4 +84,4 @@ resultados_predicciones_por_separado <- data.frame(respondent_id = c(26707:53414
 												   seasonal_vaccine = predicciones_seasonal_vaccine_test$`1`)
 
 #Lo exportamos a CSV
-write.csv(resultados,"../results/JRip_por_separado_sin_tunegrid_results.csv", row.names = F) 
+write.csv(resultados_predicciones_por_separado, "../results/JRip_por_separado_results.csv", row.names = F) 
