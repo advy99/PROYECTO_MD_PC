@@ -3,7 +3,7 @@ library(tidyverse)
 source("funciones.r")
 
 ## Lectura de datos de entrenamiento
-data <- read.csv("../data/training_set_features.csv.csv") %>%
+data <- read.csv("../data/training_set_features.csv") %>%
     mutate(across(c(-1), as.factor))
 labels <- read_csv("../data/training_set_labels.csv") %>%
     mutate(across(c(-1), as.factor))
