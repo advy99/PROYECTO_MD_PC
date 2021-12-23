@@ -31,7 +31,7 @@ random_sample <- function(training, test, train_percentage, num_features){
 # Función para leer los datos del problema aplicando las transformaciones necesarias
 # a factores y si es necesario juntar las etiquetas
 leer_datos <- function(ruta_predictores_train, ruta_etiquetas_train, ruta_predictores_test, juntar_etiquetas = FALSE,
-					   factores_ordenados = c(1,2,16:23,26), factores = -c(1,2,16:23,26:28)) {
+					   factores_ordenados = c(1,2,16:23,26), factores = c(3:15, 24:25, 29:32)) {
 	
 	# leemos los datos de train
 	x_train <- read_csv(ruta_predictores_train)
