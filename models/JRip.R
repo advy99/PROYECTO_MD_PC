@@ -29,13 +29,15 @@ test <- datos[[3]]
 train_JRip <- function(formula, datos, num_cv = 10, tune_grid = NULL) {
 	
 	# creamos el control de training con validación cruzada
-	fit_control <- trainControl(method="cv", number = num_cv, verboseIter = T)
-	
+	fit_control <- trainControl(method="cv", number = num_cv, verboseIter = T,
+								classProbs = TRUE,
+								summaryFunction = twoClassSummary)
+
 	# entrenamos el modelo
 	modelo_JRip_entrenado <- train(formula, 
 								  data = datos,
 								  method = "JRip", 
-								  metric = "Accuracy",
+								  metric = "ROC",
 								  trControl = fit_control,
 								  tuneGrid = tune_grid)
 	
@@ -47,8 +49,11 @@ train_JRip <- function(formula, datos, num_cv = 10, tune_grid = NULL) {
 # TODO: Tune grid de parametros de JRip, aunque no tiene muchos
 
 training_con_h1n1 <- base::cbind(training, training_labels[,1])
+levels(training_con_h1n1$h1n1_vaccine) <- c("X0", "X1")
 
-modelo_JRip_h1n1 <- train_JRip(h1n1_vaccine ~ ., training_con_h1n1, num_cv = 10)
+# tune grid añadido a posteriori una vez tenemos los mejores hiperparámetros
+tune_grid_h1n1 <- expand.grid(NumOpt = c(1), NumFolds = c(4), MinWeights = c(3))
+modelo_JRip_h1n1 <- train_JRip(h1n1_vaccine ~ ., training_con_h1n1, num_cv = 10, tune_grid = tune_grid_h1n1)
 
 #
 # Mejor tune obtenido para h1n1_vaccine:
@@ -62,8 +67,11 @@ summary(modelo_JRip_h1n1)
 
 
 training_con_seasonal <- base::cbind(training, training_labels[,2])
+levels(training_con_seasonal$seasonal_vaccine) <- c("X0", "X1")
 
-modelo_JRip_seasonal <- train_JRip(seasonal_vaccine ~ ., training_con_seasonal, num_cv = 10)
+# tune grid añadido a posteriori una vez tenemos los mejores hiperparámetros
+tune_grid_seasonal <- expand.grid(NumOpt = c(3), NumFolds = c(2), MinWeights = c(2))
+modelo_JRip_seasonal <- train_JRip(seasonal_vaccine ~ ., training_con_seasonal, num_cv = 10, tune_grid = tune_grid_seasonal)
 
 predicciones_seasonal_vaccine_test <- predict(modelo_JRip_seasonal, test, type = "prob")
 
@@ -80,8 +88,8 @@ summary(modelo_JRip_seasonal)
 #
 
 resultados_predicciones_por_separado <- data.frame(respondent_id = c(26707:53414), 
-												   h1n1_vaccine = predicciones_h1n1_vaccine_test$`1`, 
-												   seasonal_vaccine = predicciones_seasonal_vaccine_test$`1`)
+												   h1n1_vaccine = predicciones_h1n1_vaccine_test$`X1`, 
+												   seasonal_vaccine = predicciones_seasonal_vaccine_test$`X1`)
 
 #Lo exportamos a CSV
-write.csv(resultados_predicciones_por_separado, "../results/JRip_por_separado_results.csv", row.names = F) 
+write.csv(resultados_predicciones_por_separado, "../results/JRip_por_separado_metric_ROC_results.csv", row.names = F) 
