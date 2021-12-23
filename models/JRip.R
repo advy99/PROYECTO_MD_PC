@@ -11,9 +11,9 @@ datos <- leer_datos("../data/training_set_features_preprocessed.csv",
 					"../data/training_set_labels.csv", 
 					"../data/test_set_features_preprocessed.csv")
 
-training <- datos[[0]]
-tarining_labels <- datos[[1]]
+training <- datos[[1]]
+training_labels <- datos[[2]]
 
-test <- datos[[2]]
+test <- datos[[3]]
 
 
