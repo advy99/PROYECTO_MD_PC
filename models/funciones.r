@@ -1,9 +1,10 @@
 
 ### Funcion para extraer un subconjunto de caracteristicas e intancias para un modelo de
 ### ensemble tipo Random Forest.
-random_sample <- function(training, test, train_percentage, num_features, target){
+random_sample <- function(training, test, train_percentage, num_features, 
+                          features_range, target){
     ## Seleccionamos las caracteristicas a usar
-    features <- sample(1:33, num_features)
+    features <- sample(features_range, num_features)
 
     ## Usamos los nombres para evitar problemas si test y train no siguen el mismo orden 
     features <- colnames(training)[features]

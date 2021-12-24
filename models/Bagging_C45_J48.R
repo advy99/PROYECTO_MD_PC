@@ -55,7 +55,7 @@ y_train = y_train %>% mutate(across(c(2,3), as.factor))
 #   ENTRENAMIENTO    #
 ######################
 
-#Vamos a crear un custom random forest. Comenzaremos con uno para predecir
+#Vamos a crear un custom bagging. Comenzaremos con uno para predecir
 #la variable h1n1_vaccine.
 
 x_train = cbind(x_train, y_train[,2])
@@ -69,7 +69,7 @@ for (n in c(1:1000)){
   rows_percentage = runif(min=0,max=1,n=1)
   features = sample((1:33),1)
 
-  muestras = random_sample(x_train,x_test,rows_percentage,features,"h1n1_vaccine")
+  muestras = random_sample(x_train,x_test,rows_percentage,features,1:33,"h1n1_vaccine")
   
   #Creamos un arbol con las muestras anteriores y lo entrenamos
   
@@ -101,7 +101,7 @@ for (n in c(1:1000)){
   rows_percentage = runif(min=0,max=1,n=1)
   features = sample((1:33),1)
   
-  muestras = random_sample(x_train,x_test,rows_percentage,features,"seasonal_vaccine")
+  muestras = random_sample(x_train,x_test,rows_percentage,features,1:33,"seasonal_vaccine")
   
   #Creamos un arbol con las muestras anteriores y lo entrenamos
   
@@ -131,4 +131,4 @@ resultados = data.frame(respondent_id = c(26707:53414), h1n1_vaccine =
                           unname(resultado_seasonal))
 
 #Lo exportamos a CSV
-write.csv(resultados,"../results/RF_C45_J48_results.csv",row.names = F)  
+write.csv(resultados,"../results/Bagging_C45_J48_results.csv",row.names = F)  
