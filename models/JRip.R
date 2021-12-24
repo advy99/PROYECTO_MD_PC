@@ -93,3 +93,28 @@ resultados_predicciones_por_separado <- data.frame(respondent_id = c(26707:53414
 
 #Lo exportamos a CSV
 write.csv(resultados_predicciones_por_separado, "../results/JRip_por_separado_metric_ROC_results.csv", row.names = F) 
+
+
+
+# probamos a entrenar un modelo que utilice h1n1 para predecir seasonal vaccine
+
+training_completo <- base::cbind(training_con_h1n1, training_labels[,2])
+levels(training_completo$seasonal_vaccine) <- c("X0", "X1")
+
+tune_grid_seasonal_completo <- expand.grid(NumOpt = c(3), NumFolds = c(3), MinWeights = c(3))
+modelo_JRip_seasonal_completo <- train_JRip(seasonal_vaccine ~ ., training_completo, num_cv = 10, tune_grid = tune_grid_seasonal_completo)
+
+test_con_predicciones_h1n1 <- base::cbind(test, h1n1_vaccine = ifelse(predicciones_h1n1_vaccine_test$`X1` < 0.5, 0, 1))
+test_con_predicciones_h1n1$h1n1_vaccine <- as.factor(test_con_predicciones_h1n1$h1n1_vaccine)
+levels(test_con_predicciones_h1n1$h1n1_vaccine) <- c("X0", "X1")
+
+
+predicciones_seasonal_vaccine_test_completo <- predict(modelo_JRip_seasonal_completo, test_con_predicciones_h1n1, type = "prob")
+
+
+resultados_predicciones_completo <- data.frame(respondent_id = c(26707:53414), 
+												   h1n1_vaccine = predicciones_h1n1_vaccine_test$`X1`, 
+												   seasonal_vaccine = predicciones_seasonal_vaccine_test_completo$`X1`)
+
+#Lo exportamos a CSV
+write.csv(resultados_predicciones_completo, "../results/JRip_metric_ROC_h1n1_predictor_results.csv", row.names = F) 
