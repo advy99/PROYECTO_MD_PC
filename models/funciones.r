@@ -4,7 +4,7 @@
 random_sample <- function(training, test, train_percentage, num_features, 
                           features_range, target){
     ## Seleccionamos las caracteristicas a usar
-    features <- sample(features_range, num_features)
+    features <- sample(features_range, num_features, replace = F)
 
     ## Usamos los nombres para evitar problemas si test y train no siguen el mismo orden 
     features <- colnames(training)[features]
@@ -15,7 +15,7 @@ random_sample <- function(training, test, train_percentage, num_features,
     training_features <- c(features,target)
 
     ## Seleccionamos columnas aleatoriamente
-    rows <- sample(1:nrow(training),nrow(training)*train_percentage)
+    rows <- sample(1:nrow(training),nrow(training)*train_percentage, replace = T)
 
     ## Extraemos las muestras en ambos conjuntos
     train_sample <- training[rows,training_features]
