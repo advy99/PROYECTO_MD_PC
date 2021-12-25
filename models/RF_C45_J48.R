@@ -9,8 +9,8 @@ source("funciones.r")
 #   FUNCIONES   #
 #################
 
-CustomBaggingClassifier = function(train,test,n_trees,features_interval,
-                                   target_variable){
+RandomForestClassifier = function(train,test,n_trees,rows_percentage,features,
+                                  features_interval,target_variable){
   
   salidas = data.frame(n = c(1:nrow(test)))
   train = cbind(train, target_variable)
@@ -18,9 +18,6 @@ CustomBaggingClassifier = function(train,test,n_trees,features_interval,
   for (n in c(1:n_trees)){
     
     #Creamos las muestras para el arbol actual
-    
-    rows_percentage = runif(min=0,max=1,n=1)
-    features = sample((features_interval),1)
     
     muestras = random_sample(train,test,rows_percentage,features,features_interval,
                              colnames(target_variable))
@@ -89,7 +86,7 @@ levels(x_test$income_poverty) = c("Below Poverty","<= $75,000, Above Poverty",
 #Pasamos a factor las dos variables objetivo de y_train
 y_train = y_train %>% mutate(across(c(2,3), as.factor))
 
-#Eliminamos los ID de las etiquetas de train
+#Quitamos el ID de las etiquetas de train
 y_train = y_train %>% select(-1)
 
 
@@ -97,16 +94,24 @@ y_train = y_train %>% select(-1)
 #   ENTRENAMIENTO    #
 ######################
 
-#Vamos a crear un custom bagging. Comenzaremos con uno para predecir
+#Vamos a crear un custom Random Forest. Comenzaremos con uno para predecir
 #la variable h1n1_vaccine.
 
-resultado_h1n1 = CustomBaggingClassifier(x_train,x_test,1000,1:33,
-                                         y_train[,1])
+#Determinamos el número de variables aleatorias a usar por cada árbol como
+#la raiz cuadrada del número total de variables.
+
+features = as.integer(sqrt(ncol(x_train)))
+rows_percentage = 1.0
+
+#Llamamos a la funcion RandomForestClassifier
+
+resultado_h1n1 = RandomForestClassifier(x_train,x_test,1000,rows_percentage,features,
+  1:33, y_train[,1])
 
 #Hacemos lo mismo para predecir la variable seasonal_vaccine
 
-resultado_seasonal = CustomBaggingClassifier(x_train,x_test,1000,1:33,
-                                         y_train[,2])
+resultado_seasonal = RandomForestClassifier(x_train,x_test,1000,rows_percentage,features,
+                                        1:33,y_train[,2])
 
 ###################
 #   RESULTADOS    #
@@ -120,4 +125,4 @@ resultados = data.frame(respondent_id = c(26707:53414), h1n1_vaccine =
                           unname(resultado_seasonal))
 
 #Lo exportamos a CSV
-write.csv(resultados,"../results/Bagging_C45_J48_results.csv",row.names = F)  
+write.csv(resultados,"../results/RF_C45_J48_results.csv",row.names = F)  
