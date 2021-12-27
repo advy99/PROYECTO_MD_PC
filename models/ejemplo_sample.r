@@ -2,18 +2,21 @@ library(tidyverse)
 
 source("funciones.r")
 
+datos <- leer_datos("../data/training_set_features_preprocessed.csv", "../data/training_set_labels.csv", "../data/test_set_features_preprocessed.csv")
+
 ## Lectura de datos de entrenamiento
-data <- read.csv("../data/training_set_features.csv") %>%
-    mutate(across(c(-1), as.factor))
-labels <- read_csv("../data/training_set_labels.csv") %>%
-    mutate(across(c(-1), as.factor))
-training <- merge(x=data,y=labels,by.x="X",by.y = "respondent_id")
-summary(training)
+
+data <- datos[[1]]
+labels <- datos[[2]]
+
+summary(data)
 
 ## Lectura del conjunto de test
-test <- read_csv("../data/test_set_features.csv") %>%
-    mutate(across(c(-1), as.factor))
+test <- datos[[3]]
 summary(test)
+
+training <- data.frame(data, labels)
+summary(training)
 
 ## Extracción de las muestras
 val <- random_sample(training, test, 0.8, 5)
