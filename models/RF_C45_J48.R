@@ -46,49 +46,20 @@ RandomForestClassifier = function(train,test,n_trees,rows_percentage,features,
 #########################
 
 #Vamos a comenzar leyendo los datos
-x_train = read_csv("../data/training_set_features_preprocessed.csv")
-x_test = read_csv("../data/test_set_features_preprocessed.csv")
-y_train = read_csv("../data/training_set_labels.csv")
+datos = leer_datos("../data/training_set_features_preprocessed.csv", 
+                    "../data/training_set_labels.csv", 
+                    "../data/test_set_features_preprocessed.csv", juntar_etiquetas = FALSE,
+                   factores_ordenados = c(1,2,16:23,29), factores = -c(1,2,16:23,29,27,28))
+
+x_train = datos[[1]]
+y_train = datos[[2]]
+x_test = datos[[3]]
+
 
 #Mostramos la estructura de train y test
 str(x_train)
 str(x_test)
 str(y_train)
-
-#Necesitamos pasar las variables de los ficheros de caracteristicas a su
-#tipo correcto.
-#Primero vamos a convertir a factor ordenado aquellas variables que 
-#responden a preguntas de la encuesta con varios niveles.
-x_train = x_train %>% mutate(across(c(1,2,16:23,29), as.ordered))
-x_test = x_test %>% mutate(across(c(1,2,16:23,29), as.ordered))
-
-#El resto de variables, menos household_adults y household_children las pasamos
-#a factor sin orden.
-x_train = x_train %>% mutate(across(-c(1,2,16:23,29,27,28), as.factor))
-x_test = x_test %>% mutate(across(-c(1,2,16:23,29,27,28), as.factor))
-
-#Vemos si los niveles de los factores estan en un orden correcto.
-x_train %>% sapply(levels)
-x_test %>% sapply(levels)
-
-#En el caso de la variable "education" debemos darle prioridad a College
-#graduate antes que some college.
-levels(x_train$education) = c("< 12 Years","12 Years","Some College","College Graduate")
-levels(x_test$education) = c("< 12 Years","12 Years","Some College","College Graduate")
-
-#En el caso de la variable "income_poverty" debemos poner el nivel "Below Poverty"
-#el primero de todos porque es el que indica un mayor nivel de pobreza.
-levels(x_train$income_poverty) = c("Below Poverty","<= $75,000, Above Poverty",
-                                   "> $75,000")
-levels(x_test$income_poverty) = c("Below Poverty","<= $75,000, Above Poverty",
-                                  "> $75,000")
-
-#Pasamos a factor las dos variables objetivo de y_train
-y_train = y_train %>% mutate(across(c(2,3), as.factor))
-
-#Quitamos el ID de las etiquetas de train
-y_train = y_train %>% select(-1)
-
 
 ######################
 #   ENTRENAMIENTO    #
