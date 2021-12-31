@@ -1,6 +1,6 @@
 library(tidyverse)
 library(tidymodels)
-source("./preprocesamiento.R")
+source("./utils.R")
 
 data_features <- preprocesamiento_entrenamiento()
 
@@ -29,9 +29,10 @@ knn_model <- nearest_neighbor(neighbors = tune()) %>% set_mode("classification")
 set.seed(1)
 knn_seas_wf <- workflow() %>% add_model(knn_model) %>% add_recipe(knn_seasonal_recipe)
 
+
 knn_grid <- grid_regular(
-  neighbors(range= c(7,50)),
-  levels=3
+  neighbors(range= c(5,30)),
+  levels=5
 )
 knn_grid
 
@@ -41,7 +42,9 @@ knn_basico_res <- knn_seas_wf %>% tune_grid(
   grid = knn_grid
 )
 
-knn_basico_res %>% collect_metrics()
+seas_res <- knn_basico_res %>% collect_metrics() %>% mutate(familia="knn_base",
+                                                target="seasonal_vaccine")
+
 knn_basico_res %>% collect_metrics() %>% ggplot(aes(x=neighbors, y=mean,color=.metric)) + geom_line()
 
 
@@ -78,7 +81,9 @@ knn_basico_h1n1 <- knn_h1n1_wf %>% tune_grid(
   grid = knn_grid
 )
 
-knn_basico_h1n1 %>% collect_metrics() %>% ggplot(aes(x=neighbors, y=mean,color=.metric)) + geom_line()
+knn_basico_h1n1 %>% collect_metrics()  %>% mutate(familia="knn_base",
+                                              target="h1n1_vaccine") %>% bind_rows(seas_res) %>%
+  write_csv("./models_cv_results.csv")
 
 
 

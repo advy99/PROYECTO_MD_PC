@@ -16,7 +16,14 @@ preprocesamiento_general <- function(.data){
                                         `35 - 44 Years` = 1,
                                         `45 - 54 Years` = 2,
                                         `55 - 64 Years` = 3,
-                                        `65+ Years` = 4))
+                                        `65+ Years` = 4)) %>%
+    mutate(across(where(is.character), as.factor)) %>%
+    mutate(marital_status = recode(marital_status,
+                                   `Married` = 1,
+                                   `Not Married` = 0),
+           rent_or_own = recode(rent_or_own,
+                                `Own` = 1,
+                                `Rent` = 0))
 }
 
 
