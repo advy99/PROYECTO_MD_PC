@@ -2,6 +2,8 @@ library(tidymodels)
 library(readr)
 library(future)
 
+source("funciones.r")
+
                                         # PREPROCESSING
 ## leemos los datos de train
 x_train <- read_csv("../data/training_set_features_preprocessed.csv")
@@ -33,80 +35,107 @@ y_train = y_train %>% select(-1)
 
 ## el juntarlas es opcional, por si queremos hacer pruebas de predecir
 ## una sola variable
-if (juntar_etiquetas) {
-    ## juntamos las variables a predecir en una sola columna
-    y_train <- tidyr::unite(y_train, Y, c(h1n1_vaccine,seasonal_vaccine), sep="", remove = TRUE)
-    
-}
+## if (juntar_etiquetas) {
+##     ## juntamos las variables a predecir en una sola columna
+##     y_train <- tidyr::unite(y_train, Y, c(h1n1_vaccine,seasonal_vaccine), sep="", remove = TRUE)
+
+## }
 
 ## cambiamos todas a factor
 y_train <- y_train %>% mutate_all(as.factor)
 
-## H1N1_VACCINE
+## añadimos las etiquetas en el conjunto de entrenamiento
+x_train$seasonal_vaccine <- y_train$seasonal_vaccine
+x_train$h1n1_vaccine <- y_train$h1n1_vaccine
 
-x_h1n1 <- x_train
-x_h1n1$h1n1_vaccine = y_train$h1n1_vaccine
-
-rec <- recipe(h1n1_vaccine ~ .,x_h1n1)
-
-set.seed(100)
-plan(multisession)
-
-dt <- decision_tree(cost_complexity = tune(), tree_depth = tune(), min_n = tune()) %>% 
-    set_engine("rpart") %>% 
-    set_mode("classification")
-
-wflow_dt <- workflow() %>% 
-    add_recipe(rec) %>%
-    add_model(dt)
-
-split <- initial_split(x_h1n1)
-train <- training(split)
-cv <- vfold_cv(train)
-
-param_res <- tune_grid(dt, rec, resamples = cv, grid = 10)
-show_best(param_res, metric = "roc_auc")
-
-best_tree <- select_best(param_res, metric = "roc_auc")
-final_tree <- 
-    wflow_dt %>% 
-    finalize_workflow(best_tree)
-h1n1_predictor <- fit(final_tree,x_h1n1)
-
-h1n1_predicted <- predict(h1n1_predictor,x_test, type = "prob")
 
 ## SEASONAL_VACCINE
 
-x_seasonal <- x_train
-x_seasonal$seasonal_vaccine = y_train$seasonal_vaccine
+num_trees <- 100
 
-rec <- recipe(seasonal_vaccine ~ .,x_seasonal)
+predictions <- vector(mode='list', length=num_trees)
 
-set.seed(100)
-plan(multisession)
+entrenar_arbol <- function(train, y_train, test){
+    aux <- random_sample(x_train %>% select(-behavioral_antiviral_meds,-behavioral_face_mask,-child_under_6_months,-behavioral_wash_hands)
+                        ,x_test,0.8,10)
 
-dt <- decision_tree(cost_complexity = tune(), tree_depth = tune(), min_n = tune()) %>% 
-    set_engine("rpart") %>% 
-    set_mode("classification")
+    x_train_forest <- aux[[1]]
+        x_train_forest <- select(x_train_forest,-h1n1_vaccine)
+        x_test_forest <- aux[[2]]
 
-wflow_dt <- workflow() %>% 
-    add_recipe(rec) %>%
-    add_model(dt)
+        rec <- recipe(seasonal_vaccine ~ .,x_train_forest)
 
-split <- initial_split(x_seasonal)
-train <- training(split)
-cv <- vfold_cv(train)
+        dt <- decision_tree(cost_complexity = 0.0000005, tree_depth = 10, min_n = 35) %>% 
+            set_engine("rpart") %>% 
+            set_mode("classification")
 
-param_res <- tune_grid(dt, rec, resamples = cv, grid = 10)
-show_best(param_res, metric = "roc_auc")
+        wflow_dt <- workflow() %>% 
+            add_recipe(rec) %>%
+            add_model(dt)
+        
+    seasonal_predictor <- fit(wflow_dt,x_train_forest)
 
-best_tree <- select_best(param_res, metric = "roc_auc")
-final_tree <- 
-    wflow_dt %>% 
-    finalize_workflow(best_tree)
-seasonal_predictor <- fit(final_tree,x_seasonal)
+    return(predict(seasonal_predictor,x_test_forest, type = "prob")$.pred_1)
+}
 
-seasonal_predicted <- predict(seasonal_predictor,x_test, type = "prob")
+for (i in 1:num_trees){
+    predictions[[i]] <- entrenar_arbol(x_train,y_train,x_test)
+}
+
+seasonal_predicted <- (Reduce("+", predictions)/num_trees)
+
+##set.seed(100)
+##plan(multisession)
+
+##split <- initial_split(x_seasonal)
+##train <- training(split)
+##cv <- vfold_cv(train)
+
+##param_res <- tune_grid(dt, rec, resamples = cv, grid = 10)
+##show_best(param_res, metric = "roc_auc")
+
+##best_tree <- select_best(param_res, metric = "roc_auc")
+##final_tree <- 
+## wflow_dt %>% 
+## finalize_workflow(best_tree)
+## seasonal_predictor <- fit(final_tree,x_seasonal)
+
+
+
+## H1N1_VACCINE
+
+num_trees <- 100
+
+predictions <- vector(mode='list', length=num_trees)
+
+entrenar_arbol <- function(train, y_train, test){
+    aux <- random_sample(x_train %>% select(-behavioral_antiviral_meds,-behavioral_face_mask,-child_under_6_months,-behavioral_wash_hands)
+                        ,x_test,0.9,10)
+
+    x_train_forest <- aux[[1]]
+    x_train_forest <- select(x_train_forest,-seasonal_vaccine)
+    x_test_forest <- aux[[2]]
+
+    rec <- recipe(h1n1_vaccine ~ .,x_train_forest)
+
+    dt <- decision_tree(cost_complexity = 0.0000005, tree_depth = 10, min_n = 35) %>% 
+        set_engine("rpart") %>% 
+        set_mode("classification")
+
+    wflow_dt <- workflow() %>% 
+        add_recipe(rec) %>%
+        add_model(dt)
+    
+    predictor <- fit(wflow_dt,x_train_forest)
+
+    return(predict(predictor,x_test_forest, type = "prob")$.pred_1)
+}
+
+for (i in 1:num_trees){
+    predictions[[i]] <- entrenar_arbol(x_train,y_train,x_test)
+}
+
+h1n1_predicted <- (Reduce("+", predictions)/num_trees)
 
 
 ## RESULT
@@ -114,9 +143,8 @@ seasonal_predicted <- predict(seasonal_predictor,x_test, type = "prob")
 summary(seasonal_predicted)
 summary(h1n1_predicted)
 
-prediction <- data.frame(26707:53414,h1n1_predicted$.pred_1,seasonal_predicted$.pred_1)
-colnames(prediction) <- c("respondent_id", "h1n1_vaccine", "seasonal_vaccine")
-                                        #prediction <- data.frame(lapply(prediction, function(x) as.double(x)-1))
-summary(prediction)
+prediction <- data.frame(26707:53414,h1n1_predicted,seasonal_predicted)
+     colnames(prediction) <- c("respondent_id", "h1n1_vaccine", "seasonal_vaccine")
+     summary(prediction)
 
 write.csv(prediction,"prediction.csv", row.names = F)
