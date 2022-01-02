@@ -1,4 +1,4 @@
-source(funciones.r)
+source("funciones.r")
 
 library(RWeka)
 library(caret)
@@ -9,7 +9,7 @@ library(caret)
 
 datos <- leer_datos("../data/training_set_features_preprocessed.csv", 
 					"../data/training_set_labels.csv", 
-					"../data/test_set_features_preprocessed.csv", juntar_etiquetas = TRUE)
+					"../data/test_set_features_preprocessed.csv", juntar_etiquetas = FALSE)
 
 training <- datos[[1]]
 training_labels <- datos[[2]]
@@ -44,10 +44,53 @@ train_JRip <- function(formula, datos, num_cv = 10, tune_grid = NULL) {
 	
 }
 
-# TODO: Tune grid de parametros de JRip, aunque no tiene muchos
 
+bagging_JRip <- function(x_train, x_test, num_bootstrap, features_interval,
+						 y_train){
+	
+	salidas <- data.frame(n = c(1:nrow(x_test)))
+	train <- cbind(x_train, y_train)
+	
+	for (n in c(1:num_bootstrap)){
+		
+		# para cada iteración creamos el conjunto de muestras
+		rows_percentage <- runif(min=0,max=1,n=1)
+		features <- sample((features_interval),1)
+		
+		muestras <- random_sample(train,test,rows_percentage,features,features_interval,
+								  colnames(y_train))
+		
+		# Entrenamos JRip con las muestras anteriores
+		
+		jrip_instance <- JRip(as.formula(paste(colnames(y_train), "~.",collapse = "+")), 
+							  data = muestras[[1]])
+		
+		# Predecimos el resultado y lo introducimos en las salidas
+		
+		predicted <- predict(jrip_instance, muestras[[2]], type = "prob")
+		salidas <- cbind(salidas, predicted[,2])
+		
+		if (n %% 10 == 0) {
+			cat(paste("Bootstrapped training data set number:", n, "\n"))
+		}
+		
+		
+	}
+	
+	# Nos quedamos con la media de cada fila del dataframe de salidas.
+	colnames(salidas) <- c("n",1:num_bootstrap)
+	salidas = salidas %>% select(-1)
+	resultado = rowMeans(salidas)
+	resultado
+}
+
+
+#
+# Ejecucion basica
+#
+
+# preparamos
 training_con_h1n1 <- base::cbind(training, training_labels[,1])
-levels(training_con_h1n1$h1n1_vaccine) <- c("X0", "X1")
 
 # tune grid añadido a posteriori una vez tenemos los mejores hiperparámetros
 tune_grid_h1n1 <- expand.grid(NumOpt = c(1), NumFolds = c(4), MinWeights = c(3))
@@ -94,10 +137,14 @@ write.csv(resultados_predicciones_por_separado, "../results/JRip_por_separado_me
 
 
 
+#
+# Usamos la predicción de h1n1 para predecir seasonal vaccine
+#
+
+
 # probamos a entrenar un modelo que utilice h1n1 para predecir seasonal vaccine
 
 training_completo <- base::cbind(training_con_h1n1, training_labels[,2])
-levels(training_completo$seasonal_vaccine) <- c("X0", "X1")
 
 tune_grid_seasonal_completo <- expand.grid(NumOpt = c(3), NumFolds = c(3), MinWeights = c(3))
 modelo_JRip_seasonal_completo <- train_JRip(seasonal_vaccine ~ ., training_completo, num_cv = 10, tune_grid = tune_grid_seasonal_completo)
@@ -106,7 +153,6 @@ summary(modelo_JRip_seasonal_completo)
 
 test_con_predicciones_h1n1 <- base::cbind(test, h1n1_vaccine = ifelse(predicciones_h1n1_vaccine_test$`X1` < 0.5, 0, 1))
 test_con_predicciones_h1n1$h1n1_vaccine <- as.factor(test_con_predicciones_h1n1$h1n1_vaccine)
-levels(test_con_predicciones_h1n1$h1n1_vaccine) <- c("X0", "X1")
 
 
 predicciones_seasonal_vaccine_test_completo <- predict(modelo_JRip_seasonal_completo, test_con_predicciones_h1n1, type = "prob")
@@ -128,15 +174,12 @@ datos_unica_etiqueta <- leer_datos("../data/training_set_features_preprocessed.c
 					"../data/training_set_labels.csv", 
 					"../data/test_set_features_preprocessed.csv", juntar_etiquetas = TRUE)
 
-training <- datos_unica_etiqueta[[1]]
-training_labels <- datos_unica_etiqueta[[2]]
-
-test <- datos_unica_etiqueta[[3]]
+training_labels_una_etiqueta <- datos_unica_etiqueta[[2]]
 
 
 # probamos a predecir ambas variables juntas
 
-training_con_etiqueta <- base::cbind(training, training_labels[,1])
+training_con_etiqueta <- base::cbind(training, training_labels_una_etiqueta[,1])
 
 # tune grid añadido a posteriori una vez tenemos los mejores hiperparámetros
 tune_grid_completo <- expand.grid(NumOpt = c(3), NumFolds = c(2), MinWeights = c(2))
@@ -152,4 +195,25 @@ resultados_predicciones_completo <- data.frame(respondent_id = c(26707:53414),
 												   seasonal_vaccine = predicciones_test$`01` + predicciones_test$`11`)
 
 write.csv(resultados_predicciones_completo, "../results/JRip_cuatro_clases_results.csv", row.names = F) 
+
+
+
+
+#
+# Bagging
+#
+
+
+resultado_h1n1_bagging <- bagging_JRip(training, test, 100, 1:33,
+									  training_labels[,1])
+
+
+resultado_seasonal_bagging <- bagging_JRip(training, test, 100, 1:33,
+										   training_labels[,2])
+
+resultados_bagging <- data.frame(respondent_id = c(26707:53414), 
+								 h1n1_vaccine = unname(resultado_h1n1_bagging), 
+								 seasonal_vaccine = unname(resultado_seasonal_bagging))
+
+write.csv(resultados, "../results/JRip_bagging_100.csv", row.names = F)  
 
