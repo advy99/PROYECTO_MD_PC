@@ -126,10 +126,32 @@ x_train_sin_nulos = read_csv("../data/training_set_features_preprocessed.csv")
 x_test_sin_nulos = read_csv("../data/test_set_features_preprocessed.csv")
 
 #Vamos a usar FSelectorRcpp para ver las variables mas importantes.
-#Primero eliminamos la columna ID de las etiquetas y juntamos 
-#las dos otras columnas en una.
+#Primero eliminamos la columna ID de las etiquetas.
 
 y_train = y_train %>% select(-1)
+y_train = y_train %>% mutate_all(as.factor)
+
+#Vamos a ver las variables más importantes por cada una de las variables
+#objetivo.
+
+#Primero con h1n1_vaccine
+pesosG1 = FSelectorRcpp::information_gain(h1n1_vaccine ~ ., 
+                                         base::cbind(x_train_sin_nulos,
+                                                     y_train[,1]))
+
+visual1 = head(pesosG1 %>% arrange(desc(importance)), 10)
+ggplot(data=visual1, aes(x=reorder(attributes, -importance), y=importance)) +
+  geom_bar(fill="cornflowerblue", stat="identity")
+
+
+#Ahora con seasonal_vaccine
+pesosG2 = FSelectorRcpp::information_gain(seasonal_vaccine ~ ., 
+                                          base::cbind(x_train_sin_nulos,
+                                                      y_train[,2]))
+
+visual2 = head(pesosG2 %>% arrange(desc(importance)), 10)
+ggplot(data=visual2, aes(x=reorder(attributes, -importance), y=importance)) +
+  geom_bar(fill="cornflowerblue", stat="identity")
 
 #Juntamos h1n1_vaccine y seasonal_vaccine en una sola columna y convertimos
 #el resultado a factor
