@@ -215,5 +215,5 @@ resultados_bagging <- data.frame(respondent_id = c(26707:53414),
 								 h1n1_vaccine = unname(resultado_h1n1_bagging), 
 								 seasonal_vaccine = unname(resultado_seasonal_bagging))
 
-write.csv(resultados, "../results/JRip_bagging_100.csv", row.names = F)  
+write.csv(resultados_bagging, "../results/JRip_bagging_100.csv", row.names = F)  
 
