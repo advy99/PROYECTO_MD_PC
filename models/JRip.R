@@ -236,3 +236,25 @@ resultados_bagging_con_h1n1 <- data.frame(respondent_id = c(26707:53414),
 								 seasonal_vaccine = unname(resultado_seasonal_bagging_con_h1n1))
 
 write.csv(resultados_bagging_con_h1n1, "../results/JRip_bagging_500_prediciendo_con_h1n1.csv", row.names = F)  
+
+
+#
+# Bagging usando seasonal para predecir h1n1
+#
+
+training_con_seasonal <- base::cbind(training, training_labels[,2])
+
+test_con_predicciones_seasonal <- base::cbind(test, seasonal_vaccine = ifelse(resultado_seasonal_bagging < 0.5, 0, 1))
+test_con_predicciones_seasonal$seasonal_vaccine <- as.factor(test_con_predicciones_seasonal$seasonal_vaccine)
+
+
+resultado_h1n1_bagging_con_seasonal <- bagging_JRip(training_con_seasonal, test_con_predicciones_seasonal, 500, 1:33,
+													training_labels[,1])
+
+
+resultados_bagging_con_seasonal <- data.frame(respondent_id = c(26707:53414), 
+										  h1n1_vaccine = unname(resultado_h1n1_bagging_con_seasonal), 
+										  seasonal_vaccine = unname(resultado_seasonal_bagging))
+
+write.csv(resultados_bagging_con_seasonal, "../results/JRip_bagging_500_prediciendo_con_seasonal.csv", row.names = F)  
+
