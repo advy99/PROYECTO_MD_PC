@@ -14,7 +14,7 @@ random_sample <- function(training, test, train_percentage, num_features,
     features <- colnames(training)[features]
 
     ## Añadimos las etiquetas a train.
-    #Es necesario a�adir solamente la etiqueta que queremos predecir para que no
+    #Es necesario a?adir solamente la etiqueta que queremos predecir para que no
     #haya inconsistencias a la hora de predecir en test.
     training_features <- c(features,target)
 
@@ -34,7 +34,7 @@ random_sample <- function(training, test, train_percentage, num_features,
 # Función para leer los datos del problema aplicando las transformaciones necesarias
 # a factores y si es necesario juntar las etiquetas
 leer_datos <- function(ruta_predictores_train, ruta_etiquetas_train, ruta_predictores_test, juntar_etiquetas = FALSE,
-					   factores_ordenados = c(1,2,16:23,26), factores = c(3:15, 24:25, 29:32)) {
+					   factores_ordenados = c(1,2,16:23,26), factores = c(3:15, 24:25, 29:33)) {
 	
 	# leemos los datos de train
 	x_train <- read_csv(ruta_predictores_train)
