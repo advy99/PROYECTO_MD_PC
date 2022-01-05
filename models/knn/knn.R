@@ -48,7 +48,7 @@ seas_res <- knn_basico_res %>% collect_metrics() %>% mutate(familia="knn_base",
 knn_basico_res %>% collect_metrics() %>% ggplot(aes(x=neighbors, y=mean,color=.metric)) + geom_line()
 
 
- ## KNN para h1n1
+## KNN para h1n1
 
 train_h1n1 <- data_features %>% select(-seasonal_vaccine,-respondent_id...1,
                                                                       -respondent_id...37) %>%

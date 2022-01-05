@@ -23,7 +23,12 @@ preprocesamiento_general <- function(.data){
                                    `Not Married` = 0),
            rent_or_own = recode(rent_or_own,
                                 `Own` = 1,
-                                `Rent` = 0))
+                                `Rent` = 0)) %>%
+  mutate(education_ord = recode(education,
+                                `< 12 Years` = 0,
+                                `12 Years` = 1,
+                                `Some College` = 2,
+                                `College Graduate` = 3))
 }
 
 

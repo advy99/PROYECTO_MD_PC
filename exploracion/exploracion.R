@@ -340,3 +340,5 @@ as.data.frame(rf_imp_h1$importance) %>% rownames_to_column("variable") %>%
   labs(x="Decrecimiento medio de la pureza del nodo", y="Variable",
        title="Importancia de variables para vaccine_h1n1")
 
+
+
