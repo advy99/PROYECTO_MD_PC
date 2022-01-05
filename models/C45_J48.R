@@ -3,6 +3,7 @@ library(magrittr)
 library(dplyr)
 library(tidyr)
 library(caret)
+source("funciones.r")
 
 #########################
 #   PREPROCESAMIENTO    #
@@ -12,7 +13,7 @@ library(caret)
 datos = leer_datos("../data/training_set_features_preprocessed.csv", 
                    "../data/training_set_labels.csv", 
                    "../data/test_set_features_preprocessed.csv", juntar_etiquetas = FALSE,
-                   factores_ordenados = c(1,2,16:23,29), factores = -c(1,2,16:23,29,27,28))
+                   factores_ordenados = c(1,2,16:23,29), factores = c(3:15,24:26,30:33))
 
 x_train = datos[[1]]
 y_train = datos[[2]]
@@ -24,18 +25,18 @@ x_test = datos[[3]]
 ######################
 
 #Añadimos la variable objetivo h1n1_vaccine a x_train
-x_train = base::cbind(x_train, y_train[,2])
+x_train = base::cbind(x_train, y_train[,1])
 
-rfGrid = expand.grid(.C=c(0.1,0.05,0.025,0.01,0.0075,0.005),
-                     .M=c(1:5,seq(10,30,by=5),seq(40,100,by=10)))
+rfGrid = expand.grid(C=seq(0.025,0.25,by=0.025),
+                     M=c(1:5,seq(10,30,by=5),seq(40,100,by=10)))
 fitControl = trainControl(method="cv", number = 10, verboseIter = T)
 
 trained_c45_h1n1_vaccine = train(h1n1_vaccine ~ ., data=x_train,
                                  method="J48", metric="Accuracy",trControl=fitControl,
                                  tuneGrid=rfGrid)
 
-#Los mejores parámetros encontrados han sido C=0.1 y M=70 con una accuracy en
-#training de 0.8280976.
+#Los mejores parámetros encontrados han sido C=0.225 y M=80 con una accuracy en
+#training de 0.8263001.
 
 #Obtenemos las probabilidades del test set
 prob_prediction_h1n1_vaccine = predict(trained_c45_h1n1_vaccine,x_test,type="prob")
@@ -43,14 +44,14 @@ prob_prediction_h1n1_vaccine = predict(trained_c45_h1n1_vaccine,x_test,type="pro
 #Ahora hacemos lo mismo para seasonal_vaccine 
 #Añadimos la variable objetivo seasonal_vaccine a x_train
 x_train$h1n1_vaccine = NULL
-x_train = base::cbind(x_train, y_train[,3])
+x_train = base::cbind(x_train, y_train[,2])
 
 trained_c45_seasonal_vaccine = train(seasonal_vaccine ~ ., data=x_train,
                                  method="J48", metric="Accuracy",trControl=fitControl,
                                  tuneGrid=rfGrid)
 
-#Los mejores parámetros encontrados han sido C=0.05 y M=70 con una accuracy en
-#training de 0.7651931.
+#Los mejores parámetros encontrados han sido C=0.05 y M=15 con una accuracy en
+#training de 0.7673265.
 
 #Obtenemos las probabilidades del test set
 prob_prediction_seasonal_vaccine = predict(trained_c45_seasonal_vaccine,x_test,type="prob")

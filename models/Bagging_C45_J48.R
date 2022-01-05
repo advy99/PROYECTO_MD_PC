@@ -10,7 +10,7 @@ source("funciones.r")
 #################
 
 CustomBaggingClassifier = function(train,test,n_trees,features_interval,
-                                   target_variable){
+                                   target_variable,my_C,my_M){
   
   salidas = data.frame(n = c(1:nrow(test)))
   train = cbind(train, target_variable)
@@ -28,7 +28,7 @@ CustomBaggingClassifier = function(train,test,n_trees,features_interval,
     #Creamos un arbol con las muestras anteriores y lo entrenamos
     
     arbol = J48(as.formula(paste(colnames(target_variable), "~.",collapse = "+")),
-                data=muestras[[1]],control=Weka_control(C=0.1,M=70))
+                data=muestras[[1]],control=Weka_control(C=my_C,M=my_M))
     
     #Realizamos la prediccion del arbol y almacenamos los resultados
     
@@ -52,7 +52,7 @@ CustomBaggingClassifier = function(train,test,n_trees,features_interval,
 datos = leer_datos("../data/training_set_features_preprocessed.csv", 
                    "../data/training_set_labels.csv", 
                    "../data/test_set_features_preprocessed.csv", juntar_etiquetas = FALSE,
-                   factores_ordenados = c(1,2,16:23,29), factores = -c(1,2,16:23,29,27,28))
+                   factores_ordenados = c(1,2,16:23,29), factores = c(3:15,24:26,30:33))
 
 x_train = datos[[1]]
 y_train = datos[[2]]
@@ -73,12 +73,12 @@ str(y_train)
 #la variable h1n1_vaccine.
 
 resultado_h1n1 = CustomBaggingClassifier(x_train,x_test,1000,1:33,
-                                         y_train[,1])
+                                         y_train[,1],0.225,80)
 
 #Hacemos lo mismo para predecir la variable seasonal_vaccine
 
 resultado_seasonal = CustomBaggingClassifier(x_train,x_test,1000,1:33,
-                                         y_train[,2])
+                                         y_train[,2],0.05,15)
 
 ###################
 #   RESULTADOS    #
