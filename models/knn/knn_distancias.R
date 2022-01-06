@@ -204,7 +204,11 @@ format_results_h1 <- read_csv("./distancias_h1n1.csv") %>% group_by(distancia,ne
   select(-distancia, -roc_auc_std_err) %>% rename(std_err = accuracy_std_err)
 
 
-format_results_h1 %>% ggplot(aes(x=neighbors,y=mean,color=familia)) + geom_line() + facet_wrap(vars(.metric))
+read_csv("./models_cv_results.csv") %>% 
+  filter(familia %in% c("knn_euclidean","knn_hamming","knn_chebyshev","knn_pearson_correlation"),
+         .metric=="roc_auc") %>%
+  ggplot(aes(x=neighbors,y=mean,color=familia)) + geom_line() + facet_wrap(vars(target)) + 
+  labs(x="Vecinos", y="Media de ROC-AUC")
 
 
 ### Modelo con hamming en seasonal_vaccine con k=23 y distancia euclidea en h1n1 con k=23
