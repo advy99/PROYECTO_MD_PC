@@ -1,0 +1,5 @@
+
+.RData
+.Rhistory
+NaiveBayes/data/training_set_features.csv
+NaiveBayes/data/submission_format.csv
