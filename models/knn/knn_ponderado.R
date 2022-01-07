@@ -5,6 +5,7 @@ library(rlang)
 library(modeldata)
 
 source("./utils.R")
+source("./step_weighted_dist.R")
 
 data_features <- preprocesamiento_entrenamiento()
 train_seasonal <- data_features %>% select(-h1n1_vaccine,-respondent_id...1,

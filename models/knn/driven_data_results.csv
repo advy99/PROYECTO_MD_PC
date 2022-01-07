@@ -1,0 +1,7 @@
+Puntuacion;Algoritmo;Indice
+0,7869;K=15 distancia euclidea;1
+0,7813;K=23 nuevas variables + SMOTE;2
+0,7731;K=15 nuevas variables + SMOTE;3
+0,7958;K=23 Codificación WoE;4
+0,8055;K=23 hamming en H1N1;5
+0,797;Bagging 70ks y k=7;6
