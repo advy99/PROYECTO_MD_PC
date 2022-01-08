@@ -23,14 +23,14 @@ num_trees <- 500
 predictions <- vector(mode='list', length=num_trees)
 
 entrenar_arbol <- function(train, test){
-    aux <- random_sample(x_train,x_test,0.3,8,1:9,"seasonal_vaccine")
+    aux <- random_sample(x_train,x_test,0.3,30,1:32,"seasonal_vaccine")
 
     x_train_forest <- aux[[1]]
     x_test_forest <- aux[[2]]
 
     rec <- recipe(seasonal_vaccine ~ .,x_train_forest)
 
-    dt <- decision_tree(cost_complexity = 0.0000005, tree_depth = 7, min_n = 35) %>% 
+    dt <- decision_tree(cost_complexity = 0.0000005, tree_depth = 30, min_n = 35) %>% 
         set_engine("rpart") %>% 
         set_mode("classification")
 
@@ -56,14 +56,14 @@ num_trees <- 500
 predictions <- vector(mode='list', length=num_trees)
 
 entrenar_arbol <- function(train, test){
-    aux <- random_sample(x_train,x_test,0.3,9,1:10,"h1n1_vaccine")
+    aux <- random_sample(x_train,x_test,0.3,30,1:32,"h1n1_vaccine")
 
     x_train_forest <- aux[[1]]
     x_test_forest <- aux[[2]]
 
     rec <- recipe(h1n1_vaccine ~ .,x_train_forest)
 
-    dt <- decision_tree(cost_complexity = 0.0000005, tree_depth = 8, min_n = 35) %>% 
+    dt <- decision_tree(cost_complexity = 0.0000005, tree_depth = 30, min_n = 35) %>% 
         set_engine("rpart") %>% 
         set_mode("classification")
 
