@@ -13,7 +13,8 @@ random_sample <- function(training, test, train_percentage, num_features,
     ## Usamos los nombres para evitar problemas si test y train no siguen el mismo orden 
     features <- colnames(training)[features]
 
-    ## Añadimos las etiquetas a train.
+
+    ## Aniadimos las etiquetas a train.
     #Es necesario a?adir solamente la etiqueta que queremos predecir para que no
     #haya inconsistencias a la hora de predecir en test.
     training_features <- c(features,target)
