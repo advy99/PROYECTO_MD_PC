@@ -258,3 +258,31 @@ resultados_bagging_con_seasonal <- data.frame(respondent_id = c(26707:53414),
 
 write.csv(resultados_bagging_con_seasonal, "../results/JRip_bagging_500_prediciendo_con_seasonal.csv", row.names = F)  
 
+
+#
+# Prediccion con menos variables, las más importantes
+#
+
+training_final <- training %>% select(opinion_seas_vacc_effective, opinion_seas_risk,
+									  hhs_geo_region, age_group, doctor_recc_h1n1,
+									  opinion_h1n1_risk, opinion_h1n1_vacc_effective,
+									  education, h1n1_concern, doctor_recc_seasonal)
+
+test_final <- test %>% select(opinion_seas_vacc_effective, opinion_seas_risk,
+								  hhs_geo_region, age_group, doctor_recc_h1n1,
+								  opinion_h1n1_risk, opinion_h1n1_vacc_effective,
+								  education, h1n1_concern, doctor_recc_seasonal)
+
+resultado_h1n1_bagging <- bagging_JRip(training_final, test_final, 500, 1:10,
+									   training_labels[,1])
+
+
+resultado_seasonal_bagging <- bagging_JRip(training_final, test_final, 500, 1:10,
+										   training_labels[,2])
+
+resultados_bagging <- data.frame(respondent_id = c(26707:53414), 
+								 h1n1_vaccine = unname(resultado_h1n1_bagging), 
+								 seasonal_vaccine = unname(resultado_seasonal_bagging))
+
+write.csv(resultados_bagging, "../results/JRip_bagging_500_pocos_predictores.csv", row.names = F)  
+
