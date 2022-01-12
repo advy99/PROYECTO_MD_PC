@@ -5,7 +5,6 @@ library(embed)
 library(KernelKnn)
 
 source("./utils.R")
-source("./knn_custom_model.R")
 
 train_feat = preprocesamiento_entrenamiento() 
 
@@ -208,7 +207,7 @@ read_csv("./models_cv_results.csv") %>%
   filter(familia %in% c("knn_euclidean","knn_hamming","knn_chebyshev","knn_pearson_correlation"),
          .metric=="roc_auc") %>%
   ggplot(aes(x=neighbors,y=mean,color=familia)) + geom_line() + facet_wrap(vars(target)) + 
-  labs(x="Vecinos", y="Media de ROC-AUC")
+  labs(x="Vecinos", y="Media de ROC-AUC", color="Distancia")
 
 
 ### Modelo con hamming en seasonal_vaccine con k=23 y distancia euclidea en h1n1 con k=23
@@ -301,7 +300,7 @@ test <- bake(knn_seas_recipe_prep, new_data=test_seas_features)
 
 train_labels <- train$seasonal_vaccine
 train <- select(train, -seasonal_vaccine)
-#Meter modelo con Reticulate
+
 
 predictions_seas <- as_tibble(KernelKnn(data=train,TEST_data=test, y=train_labels, k=k, threads = 7,
                                    method = "hamming",
@@ -312,6 +311,9 @@ data.frame(respondent_id=c(26707:53414),
            seasonal_vaccine=predictions_seas$class_2) %>% 
   write.csv("../../results/KNN_hamming_seas.csv",row.names = F)
 
+
+step_woe()
+step_dummy()
 
 
 
