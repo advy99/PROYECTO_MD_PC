@@ -26,16 +26,22 @@ test <- datos[[3]]
 
 
 
-train_JRip <- function(formula, datos, num_cv = 10, tune_grid = NULL) {
+train_JRip <- function(formula, datos, num_cv = 10, tune_grid = NULL, metrica = "Accuracy") {
 	
 	# creamos el control de training con validación cruzada
 	fit_control <- trainControl(method="cv", number = num_cv, verboseIter = T)
+	
+	if (metrica == "ROC") {
+		fit_control <- trainControl(method="cv", number = num_cv, verboseIter = T,
+									classProbs = TRUE,
+									summaryFunction = twoClassSummary)
+	}
 
 	# entrenamos el modelo
 	modelo_JRip_entrenado <- train(formula, 
 								  data = datos,
 								  method = "JRip", 
-								  metric = "Accuracy",
+								  metric = metrica,
 								  trControl = fit_control,
 								  tuneGrid = tune_grid)
 	
@@ -92,9 +98,12 @@ bagging_JRip <- function(x_train, x_test, num_bootstrap, features_interval,
 # preparamos
 training_con_h1n1 <- base::cbind(training, training_labels[,1])
 
+# Si usamos métrica ROC
+#levels(training_con_h1n1$h1n1_vaccine) <- c("X0", "X1")
+
 # tune grid añadido a posteriori una vez tenemos los mejores hiperparámetros
 tune_grid_h1n1 <- expand.grid(NumOpt = c(1), NumFolds = c(4), MinWeights = c(3))
-modelo_JRip_h1n1 <- train_JRip(h1n1_vaccine ~ ., training_con_h1n1, num_cv = 10, tune_grid = tune_grid_h1n1)
+modelo_JRip_h1n1 <- train_JRip(h1n1_vaccine ~ ., training_con_h1n1, num_cv = 10, tune_grid = tune_grid_h1n1, metrica = "Accuracy")
 
 #
 # Mejor tune obtenido para h1n1_vaccine:
@@ -108,6 +117,9 @@ summary(modelo_JRip_h1n1)
 
 
 training_con_seasonal <- base::cbind(training, training_labels[,2])
+
+# Si usamos métrica ROC
+#levels(training_con_seasonal$seasonal_vaccine) <- c("X0", "X1")
 
 # tune grid añadido a posteriori una vez tenemos los mejores hiperparámetros
 tune_grid_seasonal <- expand.grid(NumOpt = c(3), NumFolds = c(2), MinWeights = c(2))
@@ -144,6 +156,9 @@ write.csv(resultados_predicciones_por_separado, "../results/JRip_por_separado_me
 # probamos a entrenar un modelo que utilice h1n1 para predecir seasonal vaccine
 
 training_completo <- base::cbind(training_con_h1n1, training_labels[,2])
+# Si usamos métrica ROC
+#levels(training_con_seasonal$seasonal_vaccine) <- c("X0", "X1")
+
 
 tune_grid_seasonal_completo <- expand.grid(NumOpt = c(3), NumFolds = c(3), MinWeights = c(3))
 modelo_JRip_seasonal_completo <- train_JRip(seasonal_vaccine ~ ., training_completo, num_cv = 10, tune_grid = tune_grid_seasonal_completo)
@@ -179,6 +194,9 @@ training_labels_una_etiqueta <- datos_unica_etiqueta[[2]]
 # probamos a predecir ambas variables juntas
 
 training_con_etiqueta <- base::cbind(training, training_labels_una_etiqueta[,1])
+# Si usamos métrica ROC
+#levels(training_con_etiqueta$Y) <- c("X0", "X1")
+
 
 # tune grid añadido a posteriori una vez tenemos los mejores hiperparámetros
 tune_grid_completo <- expand.grid(NumOpt = c(3), NumFolds = c(2), MinWeights = c(2))
