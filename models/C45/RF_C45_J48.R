@@ -3,7 +3,7 @@ library(magrittr)
 library(dplyr)
 library(tidyr)
 library(RWeka)
-source("funciones.r")
+source("../funciones.r")
 
 #################
 #   FUNCIONES   #
@@ -80,9 +80,9 @@ RandomForestClassifier = function(train,test,n_trees,rows_percentage,features,
 #########################
 
 #Vamos a comenzar leyendo los datos
-datos = leer_datos("../data/training_set_features_preprocessed.csv", 
-                    "../data/training_set_labels.csv", 
-                    "../data/test_set_features_preprocessed.csv", juntar_etiquetas = FALSE,
+datos = leer_datos("../../data/training_set_features_preprocessed.csv", 
+                    "../../data/training_set_labels.csv", 
+                    "../../data/test_set_features_preprocessed.csv", juntar_etiquetas = FALSE,
                    factores_ordenados = c(1,2,16:23,29), factores = c(3:15,24:26,30:33))
 
 x_train = datos[[1]]
@@ -108,21 +108,39 @@ str(y_train)
 features = as.integer(sqrt(ncol(x_train)))
 rows_percentage = 1.0
 
-#Llamamos a la funcion RandomForestClassifier
+#--------------------- 500 arboles --------------------#
 
-resultado_h1n1 = RandomForestClassifier(x_train,x_test,10000,rows_percentage,features,
-  1:33, y_train[,1],0.225,80)
+#Llamamos a la funcion RandomForestClassifier probando con 500 árboles y los
+#mejores hiperparámetros encontrados para C4.5/J4.8.
+
+resultado_h1n1_500 = RandomForestClassifier(x_train,x_test,500,rows_percentage,features,
+  1:33, y_train[,1],0.15,40)
 
 #Hacemos lo mismo para predecir la variable seasonal_vaccine
 
-resultado_seasonal = RandomForestClassifier(x_train,x_test,10000,rows_percentage,features,
-                                        1:33,y_train[,2],0.05,15)
+resultado_seasonal_500 = RandomForestClassifier(x_train,x_test,500,rows_percentage,features,
+                                        1:33,y_train[,2],0.025,25)
+
+#--------------------- 1000 arboles --------------------#
+
+#Probamos ahora usando 1000 árboles
+
+resultado_h1n1_1000 = RandomForestClassifier(x_train,x_test,1000,rows_percentage,features,
+                                            1:33, y_train[,1],0.15,40)
+
+#Hacemos lo mismo para predecir la variable seasonal_vaccine
+
+resultado_seasonal_1000 = RandomForestClassifier(x_train,x_test,1000,rows_percentage,features,
+                                                1:33,y_train[,2],0.025,25)
+
+
+#--------------------- Juntando variables 1000 arboles --------------------#
 
 #Vamos a probar a juntar las dos variables objetivo en una y predecirlas juntas
 y_train = tidyr::unite(y_train, Y, c(h1n1_vaccine,seasonal_vaccine), sep="", remove = TRUE)
 y_train$Y = as.factor(y_train$Y)
 resultado_h1n1_seasonal = RandomForestClassifier(x_train,x_test,1000,rows_percentage,features,
-                                                 1:33,y_train[,1],0.225,80,TRUE)
+                                                 1:33,y_train[,1],0.2,80,TRUE)
 colnames(resultado_h1n1_seasonal) = c("00","01","10","11")
 resultado_h1n1_seasonal = as.data.frame(resultado_h1n1_seasonal)
 
@@ -133,13 +151,22 @@ resultado_h1n1_seasonal = as.data.frame(resultado_h1n1_seasonal)
 #Creamos un dataframe con las probabilidades obtenidas. Este lo exportaremos
 #a CSV y lo subiremos a DrivenData.
 
-resultados = data.frame(respondent_id = c(26707:53414), h1n1_vaccine = 
-                          unname(resultado_h1n1), seasonal_vaccine = 
-                          unname(resultado_seasonal))
+#Resultados usando 500 árboles
+resultados_500 = data.frame(respondent_id = c(26707:53414), h1n1_vaccine = 
+                          unname(resultado_h1n1_500), seasonal_vaccine = 
+                          unname(resultado_seasonal_500))
 
 #Lo exportamos a CSV
-write.csv(resultados,"../results/RF_C45_J48_results.csv",row.names = F)  
+write.csv(resultados_500,"../../results/RF_C45_J48_results_500.csv",row.names = F)  
 
+
+#Resultados usando 1000 árboles
+resultados_1000 = data.frame(respondent_id = c(26707:53414), h1n1_vaccine = 
+                              unname(resultado_h1n1_1000), seasonal_vaccine = 
+                              unname(resultado_seasonal_1000))
+
+#Lo exportamos a CSV
+write.csv(resultados_1000,"../../results/RF_C45_J48_results_1000.csv",row.names = F)  
 
 #Ahora con los resultados obtenidos al predecir ambas variables objetivo
 #juntas
@@ -150,4 +177,4 @@ resultados_juntas = data.frame(respondent_id = c(26707:53414), h1n1_vaccine =
 
 
 #Lo exportamos a CSV
-write.csv(resultados_juntas,"../results/RF_C45_J48_results_united.csv",row.names = F)  
+write.csv(resultados_juntas,"../../results/RF_C45_J48_results_united.csv",row.names = F)  
