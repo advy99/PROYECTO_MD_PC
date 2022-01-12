@@ -25,6 +25,6 @@ media_csv <- function(vector_nombres) {
 }
 
 resultados <- media_csv(c("../results/Bagging_C45_J48_results.csv", "../results/CART_RPART_results.csv",
-						"../results/JRip_bagging_500.csv", "../results/KNN_hamming_seas.csv"))
+						"../results/JRip_bagging_500.csv", "../results/KNN_hamming_seas.csv", "../results/Bayes_Basic_FS_results.csv"))
 
-write.csv(resultados, "../results/media_ensembles.csv", row.names = F)  
+write.csv(resultados, "../results/media_ensembles_completo.csv", row.names = F)  
