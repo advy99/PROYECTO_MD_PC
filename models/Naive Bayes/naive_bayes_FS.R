@@ -2,7 +2,7 @@ library(e1071)
 library(caret)
 library(pROC)
 library(FSelectorRcpp)
-source("funciones.r")
+source("./funciones.r")
 
 
 
@@ -96,12 +96,12 @@ laplace_coef=1
 #print(max(auc_seasonal_fs))
 #ggplot()+aes(x=1:length(auc_seasonal_fs),y=auc_seasonal_fs)+geom_line(color="red")+geom_point()+labs(x="Atributos utilizados",y="AUC")+ggtitle("AUC para Vacuna Estacional")
 
-#write.csv(auc_h1n1_fs,'../executions/h1n1_fs_l1.csv',row.names = FALSE, col.names=FALSE)
-#write.csv(auc_seasonal_fs,'../executions/seasonal_fs_l1.csv',row.names = FALSE, col.names=FALSE)
+write.csv(auc_h1n1_fs,'./features/h1n1_fs_l1.csv',row.names = FALSE, col.names=FALSE)
+write.csv(auc_seasonal_fs,'./features/seasonal_fs_l1.csv',row.names = FALSE, col.names=FALSE)
 
 
-auc_h1n1_fs=read.csv('../executions/h1n1_fs_l1.csv')$x
-auc_seasonal_fs=read.csv('../executions/seasonal_fs_l1.csv')$x
+#auc_h1n1_fs=read.csv('./features/h1n1_fs_l1.csv')$x
+#auc_seasonal_fs=read.csv('./features/seasonal_fs_l1.csv')$x
 
 ggplot()+aes(x=2:length(auc_h1n1_fs),y=auc_h1n1_fs)+geom_line(color="red")+geom_point()+labs(x="Atributos utilizados",y="AUC")+ggtitle("AUC para H1N1, IG")
 ggplot()+aes(x=2:length(auc_seasonal_fs),y=auc_seasonal_fs)+geom_line(color="red")+geom_point()+labs(x="Atributos utilizados",y="AUC")+ggtitle("AUC para Vacuna Estacional, IG ")
@@ -126,11 +126,11 @@ print(which.max(auc_seasonal_fs_reord))
 print(max(auc_seasonal_fs_reord))
 ggplot()+aes(x=1:length(auc_seasonal_fs_reord),y=auc_seasonal_fs_reord)+geom_line(color="red")+geom_point()+labs(x="Atributos utilizados",y="AUC")+ggtitle("AUC para Vacuna Estacional, Reordenados")
 
-write.csv(auc_h1n1_fs_reord,'../executions/h1n1_fs_l1_reordered.csv',row.names = FALSE, col.names=FALSE)
-write.csv(auc_seasonal_fs_reord,'../executions/seasonal_fs_l1_reordered.csv',row.names = FALSE, col.names=FALSE)
+write.csv(auc_h1n1_fs_reord,'./features/h1n1_fs_l1_reordered.csv',row.names = FALSE, col.names=FALSE)
+write.csv(auc_seasonal_fs_reord,'./features/seasonal_fs_l1_reordered.csv',row.names = FALSE, col.names=FALSE)
 
-#auc_h1n1_fs_reord=read.csv('../executions/h1n1_fs_l1.csv')$x
-#auc_seasonal_fs_reord=read.csv('../executions/seasonal_fs_l1.csv')$x
+#auc_h1n1_fs_reord=read.csv('./features/h1n1_fs_l1.csv')$x
+#auc_seasonal_fs_reord=read.csv('./features/seasonal_fs_l1.csv')$x
 
-write.csv(feat_h1n1_new_order[1:which.max(auc_h1n1_fs_reord),]$attributes,'../executions/fs_naive_bayes_h1n1.csv',row.names=FALSE,col.names=FALSE)
-write.csv(feat_seasonal_new_order[1:which.max(auc_seasonal_fs_reord),]$attributes,'../executions/fs_naive_bayes_seasonal.csv',row.names=FALSE,col.names=FALSE)
+write.csv(feat_h1n1_new_order[1:which.max(auc_h1n1_fs_reord),]$attributes,'./features/fs_naive_bayes_h1n1.csv',row.names=FALSE,col.names=FALSE)
+write.csv(feat_seasonal_new_order[1:which.max(auc_seasonal_fs_reord),]$attributes,'./features/fs_naive_bayes_seasonal.csv',row.names=FALSE,col.names=FALSE)
