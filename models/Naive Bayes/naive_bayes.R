@@ -2,7 +2,7 @@ library(e1071)
 library(caret)
 library(pROC)
 library(FSelectorRcpp)
-source("funciones.r")
+source("../funciones.r")
 
 ####
 
@@ -76,9 +76,9 @@ cv_train_naive_bayes<-function(x_train,y_train,laplace=0,k_folds=10){
 
 ## Lectura de datos ya preprocesados
 
-datos = leer_datos("../data/training_set_features_preprocessed.csv", 
-                   "../data/training_set_labels.csv", 
-                   "../data/test_set_features_preprocessed.csv", juntar_etiquetas = FALSE)
+datos = leer_datos("../../data/training_set_features_preprocessed.csv", 
+                   "../../data/training_set_labels.csv", 
+                   "../../data/test_set_features_preprocessed.csv", juntar_etiquetas = FALSE)
 
 x_train <- datos[[1]]
 y_train <- datos[[2]]
@@ -92,8 +92,8 @@ x_test <- datos[[3]]
 
 
 ## Despu?s de feature selection (en naive_vayes_FS.R)
-h1n1_attrib<-read.csv('../executions/fs_naive_bayes_h1n1.csv',header=F)[[1]]
-seasonal_attrib<-read.csv('../executions/fs_naive_bayes_seasonal.csv',header=F)[[1]]
+h1n1_attrib<-read.csv('./features/fs_naive_bayes_h1n1.csv',header=T)[[1]]
+seasonal_attrib<-read.csv('./features/fs_naive_bayes_seasonal.csv',header=T)[[1]]
 
 h1n1_train<-x_train[,h1n1_attrib]
 seasonal_train<-x_train[,seasonal_attrib]
@@ -115,7 +115,7 @@ resultados = data.frame(respondent_id = c(26707:53414), h1n1_vaccine =
                           unname(preds_seasonal[,2]))
 
 ## Guardo los resultados
-#write.csv(resultados,"../results/Bayes_Basic_FS_results.csv",row.names = F)  
+write.csv(resultados,"../../results/naive_bayes_basic_results.csv",row.names = F)  
 
 
 #####
