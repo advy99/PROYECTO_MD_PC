@@ -52,7 +52,7 @@ train_JRip <- function(formula, datos, num_cv = 10, tune_grid = NULL, metrica = 
 
 
 bagging_JRip <- function(x_train, x_test, num_bootstrap, features_interval,
-						 y_train){
+						 y_train, funcion_agregacion = "media"){
 	
 	salidas <- data.frame(n = c(1:nrow(x_test)))
 	train <- cbind(x_train, y_train)
@@ -86,7 +86,13 @@ bagging_JRip <- function(x_train, x_test, num_bootstrap, features_interval,
 	# Nos quedamos con la media de cada fila del dataframe de salidas.
 	colnames(salidas) <- c("n",1:num_bootstrap)
 	salidas = salidas %>% select(-1)
-	resultado = rowMeans(salidas)
+	
+	if (funcion_agregacion == "media") {
+		resultado = rowMeans(salidas)
+	} else if (funcion_agregacion == "mediana") {
+		resultado = apply(salidas, 1, median, na.rm = T)
+	}
+	
 	resultado
 }
 
@@ -233,6 +239,23 @@ resultados_bagging <- data.frame(respondent_id = c(26707:53414),
 								 seasonal_vaccine = unname(resultado_seasonal_bagging))
 
 write.csv(resultados_bagging, "../results/JRip_bagging_500.csv", row.names = F)  
+
+
+
+# Bagging usando mediana como funcion de agregación
+ 
+resultado_h1n1_bagging <- bagging_JRip(training, test, 500, 1:33,
+									   training_labels[,1], funcion_agregacion = "mediana")
+
+
+resultado_seasonal_bagging <- bagging_JRip(training, test, 500, 1:33,
+										   training_labels[,2], funcion_agregacion = "mediana")
+
+resultados_bagging <- data.frame(respondent_id = c(26707:53414), 
+								 h1n1_vaccine = unname(resultado_h1n1_bagging), 
+								 seasonal_vaccine = unname(resultado_seasonal_bagging))
+
+write.csv(resultados_bagging, "../results/JRip_bagging_500_mediana.csv", row.names = F)  
 
 
 #
